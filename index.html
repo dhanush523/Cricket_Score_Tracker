@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cricket Score Tracker - Full Match</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <header>🏏 Cricket Score Tracker</header>
+
+  <!-- 📝 Match Setup -->
+  <div class="setup">
+    <label>Overs: <input type="number" id="maxOvers" min="1" value="0"></label>
+    <label>Wickets: <input type="number" id="maxWickets" min="1" value="0"></label>
+    <br>
+    <button onclick="startMatch()">Start Match</button>
+  </div>
+
+  <!-- 🧾 Scoreboard -->
+  <div class="scoreboard" id="scoreboard">
+    <div class="innings-switch">
+      <button onclick="switchInnings(1)">1st Innings</button>
+      <button onclick="switchInnings(2)">2nd Innings</button>
+    </div>
+    <div class="score" id="score">0 / 0</div>
+    <div class="details">
+      <span id="overs">Overs: 0.0</span> • 
+      <span id="runRate">Run Rate: 0.00</span> <br>
+      <span id="targetInfo"></span>
+      <br>
+      <span id="ballsLeft"></span>
+    </div>
+    <div class="controls">
+      <button onclick="addRun(1)">+1</button>
+      <button onclick="addRun(4)">+4</button>
+      <button onclick="addRun(6)">+6</button>
+      <button onclick="addBall()">•</button>
+      <button onclick="addWide()">WD</button>
+      <button onclick="addWicket()">W</button>
+    </div>
+    <div class="manual-run">
+      <input type="number" id="manualRuns" placeholder="Runs">
+      <button onclick="addManualRun()">Add</button>
+    </div>
+    <div class="controls">
+      <button onclick="undoLastBall()">↩ Undo Last</button>
+      <button onclick="resetMatch()">🔄 Reset Match</button>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <footer>✨ Match Tracker by Dhanush 🏏</footer>
+
+<script>
+let maxOvers = 0, maxWickets = 0, target = null;
+let historyStack = [];
+
+const innings = {
+  1: { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false },
+  2: { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false }
+};
+let currentInnings = 1;
+
+function startMatch() {
+  maxOvers = parseInt(document.getElementById('maxOvers').value);
+  maxWickets = parseInt(document.getElementById('maxWickets').value);
+  document.querySelector('.setup').style.display = 'none';
+  document.getElementById('scoreboard').style.display = 'block';
+  updateDisplay();
+}
+
+function switchInnings(num) {
+  currentInnings = num;
+  updateDisplay();
+}
+
+function saveHistory() {
+  historyStack.push(JSON.stringify(innings));
+}
+
+function addRun(num) {
+  const d = innings[currentInnings];
+  if (d.ended) return;
+  saveHistory();
+  d.runs += num;
+  d.balls++; d.overBalls++; d.overRuns += num;
+  addBallToTimeline(num);
+  checkOverOrEnd();
+  updateDisplay();
+}
+
+function addManualRun() {
+  const input = document.getElementById('manualRuns');
+  const val = parseInt(input.value);
+  if (!isNaN(val) && val >= 0) addRun(val);
+  input.value = '';
+}
+
+function addWicket() {
+  const d = innings[currentInnings];
+  if (d.ended || d.wickets >= maxWickets) return;
+  saveHistory();
+  d.wickets++; d.balls++; d.overBalls++;
+  addBallToTimeline("W", "wicket");
+  checkOverOrEnd();
+  updateDisplay();
+}
+
+function addBall() {
+  const d = innings[currentInnings];
+  if (d.ended) return;
+  saveHistory();
+  d.balls++; d.overBalls++;
+  addBallToTimeline("•");
+  checkOverOrEnd();
+  updateDisplay();
+}
+
+function addWide() {
+  const d = innings[currentInnings];
+  if (d.ended) return;
+  saveHistory();
+  d.runs++; d.overRuns++;
+  addBallToTimeline("WD", "wd");
+  updateDisplay();
+}
+
+function checkOverOrEnd() {
+  const d = innings[currentInnings];
+  if (d.overBalls === 6) endOver();
+  if (Math.floor(d.balls/6) >= maxOvers || d.wickets >= maxWickets) {
+    endInnings();
+  }
+  if (currentInnings === 2 && target !== null && d.runs >= target) {
+    endMatch(`🎉 2nd Innings team won by ${maxWickets - d.wickets} wickets!`);
+  }
+}
+
+function endOver() {
+  const d = innings[currentInnings];
+  d.oversTimeline.push({ 
+    title: `Over ${Math.floor(d.balls / 6)} — ${d.overRuns} runs`, 
+    balls: d.currentOverBalls || [] 
+  });
+  d.overBalls = 0; d.overRuns = 0; d.currentOverBalls = [];
+}
+
+function endInnings() {
+  const d = innings[currentInnings];
+  d.ended = true;
+  if (currentInnings === 1) {
+    target = d.runs + 1;
+    alert(`1st Innings Over. Target: ${target}`);
+    switchInnings(2);
+  } else {
+    endMatch("🏁 2nd Innings Completed");
+  }
+  updateDisplay();
+}
+
+function endMatch(msg) {
+  innings[1].ended = innings[2].ended = true;
+  alert(msg);
+}
+
+function addBallToTimeline(value, type = "") {
+  const d = innings[currentInnings];
+  d.currentOverBalls.push({ value, type });
+}
+
+function calculateRunRate(runs, balls) {
+  if (balls === 0) return "0.00";
+  return (runs / (balls / 6)).toFixed(2);
+}
+
+function updateDisplay() {
+  const d = innings[currentInnings];
+  document.getElementById("score").innerText = `${d.runs} / ${d.wickets}`;
+  document.getElementById("overs").innerText = `Overs: ${Math.floor(d.balls/6)}.${d.balls%6}`;
+  document.getElementById("runRate").innerText = `Run Rate: ${calculateRunRate(d.runs, d.balls)}`;
+  document.getElementById("targetInfo").innerText = (currentInnings === 2 && target) ? `Target: ${target}` : "";
+
+  const totalBalls = maxOvers * 6;
+  const ballsUsed = d.balls;
+  const remainingBalls = totalBalls - ballsUsed;
+  document.getElementById("ballsLeft").innerText = `Balls Left: ${remainingBalls}`;
+
+  const timelineDiv = document.getElementById("timeline");
+  timelineDiv.innerHTML = "";
+
+  d.oversTimeline.forEach(over => {
+    const overDiv = document.createElement("div");
+    overDiv.classList.add("timeline-over");
+
+    const title = document.createElement("span");
+    title.classList.add("timeline-over-title");
+    title.innerText = over.title;
+    overDiv.appendChild(title);
+
+    over.balls.forEach(b => {
+      const ball = document.createElement("span");
+      ball.classList.add("timeline-ball");
+      if (b.type) ball.classList.add(b.type);
+      ball.innerText = b.value;
+      overDiv.appendChild(ball);
+    });
+
+    timelineDiv.appendChild(overDiv);
+  });
+
+  if (d.currentOverBalls && d.currentOverBalls.length > 0) {
+    const currentOverDiv = document.createElement("div");
+    currentOverDiv.classList.add("timeline-over");
+
+    const title = document.createElement("span");
+    title.classList.add("timeline-over-title");
+    title.innerText = `Over ${Math.floor(d.balls / 6) + 1}`;
+    currentOverDiv.appendChild(title);
+
+    d.currentOverBalls.forEach(b => {
+      const ball = document.createElement("span");
+      ball.classList.add("timeline-ball");
+      if (b.type) ball.classList.add(b.type);
+      ball.innerText = b.value;
+      currentOverDiv.appendChild(ball);
+    });
+
+    timelineDiv.appendChild(currentOverDiv);
+  }
+}
+
+function undoLastBall() {
+  if (historyStack.length === 0) return;
+  const lastState = historyStack.pop();
+  const parsed = JSON.parse(lastState);
+  Object.assign(innings[1], parsed[1]);
+  Object.assign(innings[2], parsed[2]);
+  updateDisplay();
+}
+
+function resetMatch() {
+  if (!confirm("Are you sure you want to reset the entire match?")) return;
+  historyStack = [];
+  target = null;
+  innings[1] = { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false };
+  innings[2] = { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false };
+  currentInnings = 1;
+  document.querySelector('.setup').style.display = 'block';
+  document.getElementById('scoreboard').style.display = 'none';
+}
+
+
+function updateDisplay() {
+  const d = innings[currentInnings];
+  document.getElementById("score").innerText = `${d.runs} / ${d.wickets}`;
+  document.getElementById("overs").innerText = `Overs: ${Math.floor(d.balls/6)}.${d.balls%6}`;
+  document.getElementById("runRate").innerText = `Run Rate: ${calculateRunRate(d.runs, d.balls)}`;
+
+  const totalBalls = maxOvers * 6;
+  const ballsUsed = d.balls;
+  const remainingBalls = totalBalls - ballsUsed;
+
+  // Target / Required Run Rate
+  if (currentInnings === 2 && target !== null) {
+    const runsNeeded = target - d.runs;
+    const ballsLeft = totalBalls - d.balls;
+    const oversLeft = ballsLeft / 6;
+    const rrr = oversLeft > 0 ? (runsNeeded / oversLeft).toFixed(2) : "0.00";
+    document.getElementById("targetInfo").innerText = `Target: ${target} • RRR: ${rrr}`;
+    document.getElementById("ballsLeft").innerText = `Balls Left: ${ballsLeft}`;
+  } else {
+    document.getElementById("targetInfo").innerText = "";
+    document.getElementById("ballsLeft").innerText = `Balls Left: ${remainingBalls}`;
+  }
+
+  const timelineDiv = document.getElementById("timeline");
+  timelineDiv.innerHTML = "";
+
+  d.oversTimeline.forEach(over => {
+    const overDiv = document.createElement("div");
+    overDiv.classList.add("timeline-over");
+
+    const title = document.createElement("span");
+    title.classList.add("timeline-over-title");
+    title.innerText = over.title;
+    overDiv.appendChild(title);
+
+    over.balls.forEach(b => {
+      const ball = document.createElement("span");
+      ball.classList.add("timeline-ball");
+      if (b.type) ball.classList.add(b.type);
+      ball.innerText = b.value;
+      overDiv.appendChild(ball);
+    });
+
+    timelineDiv.appendChild(overDiv);
+  });
+
+  if (d.currentOverBalls && d.currentOverBalls.length > 0) {
+    const currentOverDiv = document.createElement("div");
+    currentOverDiv.classList.add("timeline-over");
+
+    const title = document.createElement("span");
+    title.classList.add("timeline-over-title");
+    title.innerText = `Over ${Math.floor(d.balls / 6) + 1}`;
+    currentOverDiv.appendChild(title);
+
+    d.currentOverBalls.forEach(b => {
+      const ball = document.createElement("span");
+      ball.classList.add("timeline-ball");
+      if (b.type) ball.classList.add(b.type);
+      ball.innerText = b.value;
+      currentOverDiv.appendChild(ball);
+    });
+
+    timelineDiv.appendChild(currentOverDiv);
+  }
+}
+
+</script>
+</body>
+</html>
