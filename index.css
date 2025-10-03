@@ -249,6 +249,25 @@ header {
   box-shadow: 0 0 12px deeppink;
 }
 
+
+#matchResult {
+  font-size: 1.2em;
+  margin: 10px 0;           /* top & bottom spacing */
+  color: gold;
+  font-weight: bold;
+  
+  /* Center horizontally and vertically */
+  display: flex;
+  justify-content: center;   /* horizontal center */
+  align-items: center;       /* vertical center */
+  
+  text-align: center;        /* ensures multi-line text is centered */
+  width: 100%;               /* fill the parent container */
+  padding: 5px 0;            /* optional padding for spacing */
+}
+
+
+
 /* 📱 Mobile Responsive */
 @media (max-width: 480px) {
   header { font-size: 1.6rem; }

@@ -3,85 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cricket Score Tracker - Full Match</title>
+  <title>🏏 Cricket Score Tracker - Full Match</title>
   <link rel="stylesheet" href="index.css">
   <style>
-    /* ✨ Highlight Colors for 4 & 6 Buttons */
-    .controls button.four-active {
-      background: #ff9800 !important; /* Orange for 4 */
-      color: #fff !important;
-      box-shadow: 0 0 10px #ff9800;
-    }
-    .controls button.six-active {
-      background: #e91e63 !important; /* Pink for 6 */
-      color: #fff !important;
-      box-shadow: 0 0 10px #e91e63;
-    }
-
-    /* ✨ Timeline balls color */
-    .timeline-ball.four {
-      background: #ff9800;
-      color: #fff;
-    }
-    .timeline-ball.six {
-      background: #e91e63;
-      color: #fff;
-    }
+    body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #1b2a38; color: #fff; text-align: center; }
+    header { font-size: 2em; margin: 20px; }
+    .setup { margin-bottom: 20px; }
+    .scoreboard button { margin: 5px; padding: 10px 15px; font-size: 1em; }
+    .score { font-size: 2em; margin: 10px 0; }
+    .details { margin-bottom: 10px; }
+    #matchResult { font-size: 1.2em; margin-top: 10px; color: gold; font-weight: bold; }
+    .timeline-over { margin: 5px 0; }
+    .timeline-over-title { font-weight: bold; margin-right: 10px; }
+    .timeline-ball { display: inline-block; margin: 0 2px; padding: 2px 5px; border-radius: 4px; background: #333; }
+    .wd { background: #f39c12; }
+    .noBall { background: #e74c3c; }
+    .wicket { background: #c0392b; }
   </style>
 </head>
 <body>
 
-  <header>🏏 Cricket Score Tracker</header>
+<header>🏏 Cricket Score Tracker</header>
 
-  <!-- 📝 Match Setup -->
-  <div class="setup">
-    <label>Overs: <input type="number" id="maxOvers" min="1" value="5"></label>
-    <label>Wickets: <input type="number" id="maxWickets" min="1" value="2"></label>
-    <br>
-    <button onclick="startMatch()">Start Match</button>
+<!-- 📝 Match Setup -->
+<div class="setup">
+  <label>Overs: <input type="number" id="maxOvers" min="1" value="1"></label>
+  <label>Wickets: <input type="number" id="maxWickets" min="1" value="2"></label>
+  <br>
+  <button onclick="startMatch()">Start Match</button>
+</div>
+
+<!-- 🧾 Scoreboard -->
+<div class="scoreboard" id="scoreboard" style="display:none;">
+  <div class="innings-switch">
+    <button onclick="switchInnings(1)">1st Innings</button>
+    <button onclick="switchInnings(2)">2nd Innings</button>
   </div>
 
-  <!-- 🧾 Scoreboard -->
-  <div class="scoreboard" id="scoreboard">
-    <div class="innings-switch">
-      <button onclick="switchInnings(1)">1st Innings</button>
-      <button onclick="switchInnings(2)">2nd Innings</button>
-    </div>
-
-    <div class="score" id="score">0 / 0</div>
-    <div class="details">
-      <span id="overs">Overs: 0.0</span> • 
-      <span id="runRate">Run Rate: 0.00</span> <br>
-      <span id="targetInfo"></span> <br>
-      <span id="ballsLeft"></span>
-    </div>
-
-    <div class="controls">
-      <button onclick="addBall()">•</button>
-      <button onclick="addRun(1)">+1</button>
-      <button onclick="addRun(2)">+2</button>
-      <button onclick="addRun(3)">+3</button>
-      <button id="btn4" onclick="addRun(4)">+4</button>
-      <button id="btn6" onclick="addRun(6)">+6</button>
-      <button onclick="addWide()">WD</button>
-      <button onclick="addNoBall()">NB</button>
-      <button onclick="addWicket()">W</button>
-    </div>
-
-    <div class="manual-run">
-      <input type="number" id="manualRuns" placeholder="Runs">
-      <button onclick="addManualRun()">Add</button>
-    </div>
-
-    <div class="controls">
-      <button onclick="undoLastBall()">↩ Undo Last</button>
-      <button onclick="resetMatch()">🔄 Reset Match</button>
-    </div>
-
-    <div class="timeline" id="timeline"></div>
+  <div class="score" id="score">0 / 0</div>
+  <div class="details">
+    <span id="overs">Overs: 0.0</span> • 
+    <span id="runRate">Run Rate: 0.00</span> <br>
+    <span id="targetInfo"></span> <br>
+    <span id="ballsLeft"></span>
   </div>
 
-  <footer>✨ Match Tracker by Dhanush 🏏</footer>
+  <!-- 🕹 Controls -->
+  <div class="controls">
+    <button onclick="addBall()">•</button>
+    <button onclick="addRun(1)">+1</button>
+    <button onclick="addRun(2)">+2</button>
+    <button onclick="addRun(3)">+3</button>
+    <button onclick="addRun(4)">+4</button>
+    <button onclick="addRun(6)">+6</button>
+    <button onclick="addWide()">WD</button>
+    <button onclick="addNoBall()">NB</button>
+    <button onclick="addWicket()">W</button>
+  </div>
+
+  <div class="manual-run">
+    <input type="number" id="manualRuns" placeholder="Runs">
+    <button onclick="addManualRun()">Add</button>
+  </div>
+
+  <div class="controls">
+    <button onclick="undoLastBall()">↩ Undo Last</button>
+    <button onclick="resetMatch()">🔄 Reset Match</button>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+  <div id="matchResult"></div>
+</div>
 
 <script>
 let maxOvers = 0, maxWickets = 0, target = null;
@@ -93,9 +85,7 @@ const innings = {
 };
 let currentInnings = 1;
 
-const btn4 = document.getElementById("btn4");
-const btn6 = document.getElementById("btn6");
-
+// Start match
 function startMatch() {
   maxOvers = parseInt(document.getElementById('maxOvers').value);
   maxWickets = parseInt(document.getElementById('maxWickets').value);
@@ -104,39 +94,32 @@ function startMatch() {
   updateDisplay();
 }
 
+// Switch innings
 function switchInnings(num) {
   currentInnings = num;
   updateDisplay();
 }
 
+// Save history for undo
 function saveHistory() {
   historyStack.push(JSON.stringify(innings));
 }
 
+// Add runs
 function addRun(num) {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
   d.runs += num;
-  d.balls++; d.overBalls++; d.overRuns += num;
-
-  // ✨ Button highlight flash for 4 & 6
-  if (num === 4) {
-    btn4.classList.add("four-active");
-    setTimeout(() => btn4.classList.remove("four-active"), 300);
-    addBallToTimeline(num, "four");
-  } else if (num === 6) {
-    btn6.classList.add("six-active");
-    setTimeout(() => btn6.classList.remove("six-active"), 300);
-    addBallToTimeline(num, "six");
-  } else {
-    addBallToTimeline(num);
-  }
-
+  d.balls++;
+  d.overBalls++;
+  d.overRuns += num;
+  addBallToTimeline(num);
   checkOverOrEnd();
   updateDisplay();
 }
 
+// Add manual run
 function addManualRun() {
   const input = document.getElementById('manualRuns');
   const val = parseInt(input.value);
@@ -144,105 +127,133 @@ function addManualRun() {
   input.value = '';
 }
 
+// Add wicket
 function addWicket() {
   const d = innings[currentInnings];
   if (d.ended || d.wickets >= maxWickets) return;
   saveHistory();
-  d.wickets++; d.balls++; d.overBalls++;
+  d.wickets++;
+  d.balls++;
+  d.overBalls++;
   addBallToTimeline("W", "wicket");
   checkOverOrEnd();
   updateDisplay();
 }
 
+// Dot ball
 function addBall() {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-  d.balls++; d.overBalls++;
+  d.balls++;
+  d.overBalls++;
   addBallToTimeline("•");
   checkOverOrEnd();
   updateDisplay();
 }
 
-function addWide(runs = 1) {
+// Wide ball
+function addWide() {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-  d.runs += runs;
-  d.overRuns += runs;
+  d.runs += 1;
+  d.overRuns += 1;
   addBallToTimeline("WD", "wd");
+  checkWinAfterExtra();
   updateDisplay();
 }
 
+// No ball
 function addNoBall() {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-  let extra = prompt("Runs scored on No Ball (if any):", "0");
-  extra = parseInt(extra);
-  if (isNaN(extra) || extra < 0) extra = 0;
-  if (extra > 0) {
-    d.runs += extra;
-    d.overRuns += extra;
-  }
-  addBallToTimeline(`NB+${extra}`, "noBall");
+  let batRuns = prompt("Batsman runs on No Ball:", "0");
+  batRuns = parseInt(batRuns);
+  if (isNaN(batRuns) || batRuns < 0) batRuns = 0;
+  const totalRuns = 1 + batRuns;
+  d.runs += totalRuns;
+  d.overRuns += totalRuns;
+  if (batRuns > 0) addBallToTimeline(`NB+${batRuns}`, "noBall");
+  else addBallToTimeline("NB", "noBall");
+  checkWinAfterExtra();
   updateDisplay();
 }
 
-function checkOverOrEnd() {
+// Check win for extras
+function checkWinAfterExtra() {
   const d = innings[currentInnings];
-  if (d.overBalls === 6) endOver();
-  if (Math.floor(d.balls / 6) >= maxOvers || d.wickets >= maxWickets) {
-    endInnings();
-  }
   if (currentInnings === 2 && target !== null && d.runs >= target) {
     endMatch(`🎉 2nd Innings team won by ${maxWickets - d.wickets} wickets!`);
   }
 }
 
-function endOver() {
+// Check over completion or innings end
+function checkOverOrEnd() {
   const d = innings[currentInnings];
-  d.oversTimeline.push({ 
-    title: `Over ${Math.floor(d.balls / 6)} — ${d.overRuns} runs`, 
-    balls: d.currentOverBalls || [] 
-  });
-  d.overBalls = 0; d.overRuns = 0; d.currentOverBalls = [];
+  if (d.overBalls === 6) endOver();
+  if (Math.floor(d.balls / 6) >= maxOvers || d.wickets >= maxWickets) endInnings();
+  if (currentInnings === 2 && target !== null && d.runs >= target) {
+    endMatch(`🎉 2nd Innings team won by ${maxWickets - d.wickets} wickets!`);
+  }
 }
 
+// End over
+function endOver() {
+  const d = innings[currentInnings];
+  d.oversTimeline.push({
+    title: `Over ${Math.floor(d.balls / 6)} — ${d.overRuns} runs`,
+    balls: d.currentOverBalls || []
+  });
+  d.overBalls = 0;
+  d.overRuns = 0;
+  d.currentOverBalls = [];
+}
+
+// End innings
 function endInnings() {
   const d = innings[currentInnings];
   d.ended = true;
   if (currentInnings === 1) {
     target = d.runs + 1;
-    alert(`1st Innings Over. Target: ${target}`);
+    alert(`🏏 1st Innings Over.\n🎯 Target for 2nd Innings: ${target}`);
     switchInnings(2);
   } else {
-    endMatch("🏁 2nd Innings Completed");
+    if (d.runs >= target) {
+      endMatch(`🎉 2nd Innings team won by ${maxWickets - d.wickets} wickets!`);
+    } else {
+      const margin = target - d.runs - 1;
+      endMatch(`🏆 1st Innings team won by ${margin} runs!`);
+    }
   }
   updateDisplay();
 }
 
+// End match
 function endMatch(msg) {
   innings[1].ended = innings[2].ended = true;
-  alert(msg);
+  document.getElementById("matchResult").innerText = msg;
 }
 
+// Add ball to timeline
 function addBallToTimeline(value, type = "") {
   const d = innings[currentInnings];
   d.currentOverBalls.push({ value, type });
 }
 
+// Run rate
 function calculateRunRate(runs, balls) {
   if (balls === 0) return "0.00";
   return (runs / (balls / 6)).toFixed(2);
 }
 
+// Update display
 function updateDisplay() {
   const d = innings[currentInnings];
   document.getElementById("score").innerText = `${d.runs} / ${d.wickets}`;
   document.getElementById("overs").innerText = `Overs: ${Math.floor(d.balls / 6)}.${d.balls % 6}`;
   document.getElementById("runRate").innerText = `Run Rate: ${calculateRunRate(d.runs, d.balls)}`;
-
   const totalBalls = maxOvers * 6;
   const ballsUsed = d.balls;
   const remainingBalls = totalBalls - ballsUsed;
@@ -261,16 +272,13 @@ function updateDisplay() {
 
   const timelineDiv = document.getElementById("timeline");
   timelineDiv.innerHTML = "";
-
   d.oversTimeline.forEach(over => {
     const overDiv = document.createElement("div");
     overDiv.classList.add("timeline-over");
-
     const title = document.createElement("span");
     title.classList.add("timeline-over-title");
     title.innerText = over.title;
     overDiv.appendChild(title);
-
     over.balls.forEach(b => {
       const ball = document.createElement("span");
       ball.classList.add("timeline-ball");
@@ -278,51 +286,17 @@ function updateDisplay() {
       ball.innerText = b.value;
       overDiv.appendChild(ball);
     });
-
     timelineDiv.appendChild(overDiv);
   });
 
   if (d.currentOverBalls && d.currentOverBalls.length > 0) {
     const currentOverDiv = document.createElement("div");
     currentOverDiv.classList.add("timeline-over");
-
     const title = document.createElement("span");
     title.classList.add("timeline-over-title");
     title.innerText = `Over ${Math.floor(d.balls / 6) + 1}`;
     currentOverDiv.appendChild(title);
-
     d.currentOverBalls.forEach(b => {
       const ball = document.createElement("span");
       ball.classList.add("timeline-ball");
-      if (b.type) ball.classList.add(b.type);
-      ball.innerText = b.value;
-      currentOverDiv.appendChild(ball);
-    });
-
-    timelineDiv.appendChild(currentOverDiv);
-  }
-}
-
-function undoLastBall() {
-  if (historyStack.length === 0) return;
-  const lastState = historyStack.pop();
-  const parsed = JSON.parse(lastState);
-  Object.assign(innings[1], parsed[1]);
-  Object.assign(innings[2], parsed[2]);
-  updateDisplay();
-}
-
-function resetMatch() {
-  if (!confirm("Are you sure you want to reset the entire match?")) return;
-  historyStack = [];
-  target = null;
-  innings[1] = { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false };
-  innings[2] = { runs: 0, wickets: 0, balls: 0, overBalls: 0, overRuns: 0, oversTimeline: [], currentOverBalls: [], ended: false };
-  currentInnings = 1;
-  document.querySelector('.setup').style.display = 'block';
-  document.getElementById('scoreboard').style.display = 'none';
-}
-</script>
-
-</body>
-</html>
+<script>
