@@ -131,7 +131,7 @@ function addBall() {
   updateDisplay();
 }
 
-// ✅ WIDE BALL FIXED: 1 run, no batsman runs, no ball counted
+// ✅ WIDE BALL: 1 extra, no ball counted, no extra runs by batsman
 function addWide() {
   const d = innings[currentInnings];
   if (d.ended) return;
@@ -149,7 +149,7 @@ function addNoBall() {
   saveHistory();
 
   const nbRun = 1;
-  let batRuns = prompt("Batsman runs on No Ball:", "0");
+  let batRuns = prompt("Batsman runs on No Ball:", "");
   batRuns = parseInt(batRuns);
   if (isNaN(batRuns) || batRuns < 0) batRuns = 0;
 
@@ -188,15 +188,22 @@ function endOver() {
   d.currentOverBalls = [];
 }
 
+// ✅ UPDATED: Handles both innings result correctly
 function endInnings() {
   const d = innings[currentInnings];
   d.ended = true;
+
   if (currentInnings === 1) {
     target = d.runs + 1;
-    alert(`1st Innings Over. Target: ${target}`);
+    alert(`🏏 1st Innings Over.\n🎯 Target for 2nd Innings: ${target}`);
     switchInnings(2);
   } else {
-    endMatch("🏁 2nd Innings Completed");
+    if (d.runs >= target) {
+      endMatch(`🎉 2nd Innings team won by ${maxWickets - d.wickets} wickets!`);
+    } else {
+      const margin = target - d.runs - 1;
+      endMatch(`🏆 1st Innings team won by ${margin} runs!`);
+    }
   }
   updateDisplay();
 }
@@ -301,6 +308,7 @@ function resetMatch() {
   document.querySelector('.setup').style.display = 'block';
   document.getElementById('scoreboard').style.display = 'none';
 }
+
 </script>
 
 </body>
