@@ -3,8 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>🏏 Cricket Score Tracker - Full Match</title>
+  <title>Cricket Score Tracker - Full Match</title>
   <link rel="stylesheet" href="index.css">
+  <style>
+    /* ✨ Highlight Colors for 4 & 6 Buttons */
+    .controls button.four-active {
+      background: #ff9800 !important; /* Orange for 4 */
+      color: #fff !important;
+      box-shadow: 0 0 10px #ff9800;
+    }
+    .controls button.six-active {
+      background: #e91e63 !important; /* Pink for 6 */
+      color: #fff !important;
+      box-shadow: 0 0 10px #e91e63;
+    }
+
+    /* ✨ Timeline balls color */
+    .timeline-ball.four {
+      background: #ff9800;
+      color: #fff;
+    }
+    .timeline-ball.six {
+      background: #e91e63;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
 
@@ -12,14 +35,14 @@
 
   <!-- 📝 Match Setup -->
   <div class="setup">
-    <label>Overs: <input type="number" id="maxOvers" min="1" value="0"></label>
-    <label>Wickets: <input type="number" id="maxWickets" min="1" value="0"></label>
+    <label>Overs: <input type="number" id="maxOvers" min="1" value="5"></label>
+    <label>Wickets: <input type="number" id="maxWickets" min="1" value="2"></label>
     <br>
     <button onclick="startMatch()">Start Match</button>
   </div>
 
   <!-- 🧾 Scoreboard -->
-  <div class="scoreboard" id="scoreboard" style="display:none;">
+  <div class="scoreboard" id="scoreboard">
     <div class="innings-switch">
       <button onclick="switchInnings(1)">1st Innings</button>
       <button onclick="switchInnings(2)">2nd Innings</button>
@@ -33,14 +56,13 @@
       <span id="ballsLeft"></span>
     </div>
 
-    <!-- 🕹 Controls -->
     <div class="controls">
       <button onclick="addBall()">•</button>
       <button onclick="addRun(1)">+1</button>
       <button onclick="addRun(2)">+2</button>
       <button onclick="addRun(3)">+3</button>
-      <button onclick="addRun(4)">+4</button>
-      <button onclick="addRun(6)">+6</button>
+      <button id="btn4" onclick="addRun(4)">+4</button>
+      <button id="btn6" onclick="addRun(6)">+6</button>
       <button onclick="addWide()">WD</button>
       <button onclick="addNoBall()">NB</button>
       <button onclick="addWicket()">W</button>
@@ -71,6 +93,9 @@ const innings = {
 };
 let currentInnings = 1;
 
+const btn4 = document.getElementById("btn4");
+const btn6 = document.getElementById("btn6");
+
 function startMatch() {
   maxOvers = parseInt(document.getElementById('maxOvers').value);
   maxWickets = parseInt(document.getElementById('maxWickets').value);
@@ -93,10 +118,21 @@ function addRun(num) {
   if (d.ended) return;
   saveHistory();
   d.runs += num;
-  d.balls++;
-  d.overBalls++;
-  d.overRuns += num;
-  addBallToTimeline(num);
+  d.balls++; d.overBalls++; d.overRuns += num;
+
+  // ✨ Button highlight flash for 4 & 6
+  if (num === 4) {
+    btn4.classList.add("four-active");
+    setTimeout(() => btn4.classList.remove("four-active"), 300);
+    addBallToTimeline(num, "four");
+  } else if (num === 6) {
+    btn6.classList.add("six-active");
+    setTimeout(() => btn6.classList.remove("six-active"), 300);
+    addBallToTimeline(num, "six");
+  } else {
+    addBallToTimeline(num);
+  }
+
   checkOverOrEnd();
   updateDisplay();
 }
@@ -112,9 +148,7 @@ function addWicket() {
   const d = innings[currentInnings];
   if (d.ended || d.wickets >= maxWickets) return;
   saveHistory();
-  d.wickets++;
-  d.balls++;
-  d.overBalls++;
+  d.wickets++; d.balls++; d.overBalls++;
   addBallToTimeline("W", "wicket");
   checkOverOrEnd();
   updateDisplay();
@@ -124,45 +158,34 @@ function addBall() {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-  d.balls++;
-  d.overBalls++;
+  d.balls++; d.overBalls++;
   addBallToTimeline("•");
   checkOverOrEnd();
   updateDisplay();
 }
 
-// ✅ WIDE BALL FIXED: 1 run, no batsman runs, no ball counted
-function addWide() {
+function addWide(runs = 1) {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-  d.runs += 1;
-  d.overRuns += 1;
+  d.runs += runs;
+  d.overRuns += runs;
   addBallToTimeline("WD", "wd");
   updateDisplay();
 }
 
-// ✅ NO BALL: 1 extra + batsman runs if any
 function addNoBall() {
   const d = innings[currentInnings];
   if (d.ended) return;
   saveHistory();
-
-  const nbRun = 1;
-  let batRuns = prompt("Batsman runs on No Ball:", "0");
-  batRuns = parseInt(batRuns);
-  if (isNaN(batRuns) || batRuns < 0) batRuns = 0;
-
-  const totalRuns = nbRun + batRuns;
-  d.runs += totalRuns;
-  d.overRuns += totalRuns;
-
-  if (batRuns > 0) {
-    addBallToTimeline(`NB+${batRuns}`, "noBall");
-  } else {
-    addBallToTimeline("NB", "noBall");
+  let extra = prompt("Runs scored on No Ball (if any):", "0");
+  extra = parseInt(extra);
+  if (isNaN(extra) || extra < 0) extra = 0;
+  if (extra > 0) {
+    d.runs += extra;
+    d.overRuns += extra;
   }
-
+  addBallToTimeline(`NB+${extra}`, "noBall");
   updateDisplay();
 }
 
@@ -179,13 +202,11 @@ function checkOverOrEnd() {
 
 function endOver() {
   const d = innings[currentInnings];
-  d.oversTimeline.push({
-    title: `Over ${Math.floor(d.balls / 6)} — ${d.overRuns} runs`,
-    balls: d.currentOverBalls || []
+  d.oversTimeline.push({ 
+    title: `Over ${Math.floor(d.balls / 6)} — ${d.overRuns} runs`, 
+    balls: d.currentOverBalls || [] 
   });
-  d.overBalls = 0;
-  d.overRuns = 0;
-  d.currentOverBalls = [];
+  d.overBalls = 0; d.overRuns = 0; d.currentOverBalls = [];
 }
 
 function endInnings() {
