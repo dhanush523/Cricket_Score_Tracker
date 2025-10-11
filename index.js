@@ -1,4 +1,3 @@
-
 let maxOvers = 0, maxWickets = 0, target = null;
 let historyStack = [];
 
@@ -131,21 +130,25 @@ function addBall() {
   updateDisplay();
 }
 
-// --- Wide ---
+// --- Wide (with popup for extra runs) ---
 function addWide() {
   if (!isInningsActive()) return;
   const d = innings[currentInnings];
   saveHistory();
 
-  d.runs++;
-  d.overRuns++;
-  addBallToTimeline("WD", "wd");
+  let extraRuns = parseInt(prompt("Batsman runs on Wide Ball:", "")) || 0;
+  const totalRuns = 1 + extraRuns;
+
+  d.runs += totalRuns;
+  d.overRuns += totalRuns;
+
+  addBallToTimeline(extraRuns > 0 ? `WD+${extraRuns}` : "WD", "wd");
 
   checkWinAfterExtra();
   updateDisplay();
 }
 
-// --- No Ball ---
+// --- No Ball (with popup for extra runs) ---
 function addNoBall() {
   if (!isInningsActive()) return;
   const d = innings[currentInnings];
@@ -156,6 +159,7 @@ function addNoBall() {
 
   d.runs += totalRuns;
   d.overRuns += totalRuns;
+
   addBallToTimeline(batRuns > 0 ? `NB+${batRuns}` : "NB", "noBall");
 
   checkWinAfterExtra();
@@ -248,7 +252,7 @@ function updateDisplay() {
     document.getElementById("ballsLeft").innerText = `Balls Left: ${maxOvers * 6 - d.balls}`;
   }
 
-  // Timeline
+  // Timeline display
   const timelineDiv = document.getElementById("timeline");
   timelineDiv.innerHTML = "";
   d.oversTimeline.forEach(over => {
@@ -299,9 +303,12 @@ function checkWinner() {
   const matchDiv = document.getElementById("matchResult");
 
   if (innings[1].ended && innings[2].ended) {
-    if (innings[2].runs >= target) matchDiv.innerText = `🎉 2nd Innings team won by ${maxWickets - innings[2].wickets} wickets!`;
-    else if (innings[2].runs === target - 1) matchDiv.innerText = `🤝 Match Tied!`;
-    else matchDiv.innerText = `🏆 1st Innings team won by ${target - innings[2].runs - 1} runs!`;
+    if (innings[2].runs >= target)
+      matchDiv.innerText = `🎉 2nd Innings team won by ${maxWickets - innings[2].wickets} wickets!`;
+    else if (innings[2].runs === target - 1)
+      matchDiv.innerText = `🤝 Match Tied!`;
+    else
+      matchDiv.innerText = `🏆 1st Innings team won by ${target - innings[2].runs - 1} runs!`;
   } else if (innings[1].ended && currentInnings === 2 && innings[2].runs >= target) {
     matchDiv.innerText = `🎉 2nd Innings team won by ${maxWickets - innings[2].wickets} wickets!`;
   } else matchDiv.innerText = "";
@@ -331,4 +338,3 @@ function resetMatch() {
   document.getElementById('scoreboard').style.display = 'none';
   document.getElementById("matchResult").innerText = "";
 }
-
