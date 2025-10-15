@@ -283,3 +283,16 @@ header {
   .scoreboard { width: 90%; }
   .controls button { flex: 1 1 30%; }
 }
+
+
+.innings-link {
+  color: #0078ff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.innings-link:hover {
+  color: #005fcc;
+  /* text-decoration: underline; */
+}

@@ -74,7 +74,8 @@
   <div class="timeline" id="timeline"></div>
   <div id="matchResult"></div>
 </div>
-
+</body>
+</html>
 <script>
 let maxOvers = 0, maxWickets = 0, target = null;
 let historyStack = [];
@@ -296,7 +297,9 @@ function updateDisplay() {
     title.classList.add("timeline-over-title");
     title.innerText = `Over ${Math.floor(d.balls / 6) + 1}`;
     currentOverDiv.appendChild(title);
-    d.currentOverBalls.forEach(b => {
+    d.currentOverBalls.forEach(b =>) {
       const ball = document.createElement("span");
       ball.classList.add("timeline-ball");
-<script>
+    }
+  }
+</script>
